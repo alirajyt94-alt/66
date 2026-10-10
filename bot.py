@@ -24,23 +24,22 @@ class MusicBot(commands.Bot):
 
     async def setup_hook(self):
         # Force working directory to the folder containing bot.py
-        # This makes the bot Railway/Linux/systemd-proof
         base_dir = os.path.dirname(os.path.abspath(__file__))
         os.chdir(base_dir)
         logger.info(f"Working directory set to: {base_dir}")
 
-        # Verify cogs folder exists before loading
-        cogs_path = os.path.join(base_dir, "cogs")
-        if not os.path.isdir(cogs_path):
-            logger.critical(f"'cogs' folder not found at {cogs_path}. Aborting.")
+        # Verify music.py exists
+        music_path = os.path.join(base_dir, "music.py")
+        if not os.path.isfile(music_path):
+            logger.critical(f"music.py not found at {music_path}. Aborting.")
             sys.exit(1)
 
-        # Load the music cog with error handling
+        # Load music.py as a top-level extension
         try:
-            await self.load_extension("cogs.music")
-            logger.info("Loaded extension: cogs.music")
+            await self.load_extension("music")
+            logger.info("Loaded extension: music")
         except Exception as e:
-            logger.critical(f"Failed to load cogs.music: {e}")
+            logger.critical(f"Failed to load music.py: {e}")
             sys.exit(1)
 
         # Sync slash commands globally
@@ -65,7 +64,7 @@ class MusicBot(commands.Bot):
 
 async def main():
     if not Config.DISCORD_TOKEN:
-        logger.critical("DISCORD_TOKEN is missing. Check your .env or Railway variables.")
+        logger.critical("DISCORD_TOKEN is missing. Check your Railway variables.")
         sys.exit(1)
 
     async with MusicBot() as bot:
