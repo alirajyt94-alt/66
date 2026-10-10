@@ -43,19 +43,19 @@ except ImportError:
 # PROFESSIONAL COLOR PALETTE
 # ============================================================
 COLORS = {
-    "primary": 0x5865F2,      # Discord Blurple
-    "success": 0x57F287,      # Green
-    "warning": 0xFEE75C,      # Yellow
-    "error": 0xED4245,        # Red
-    "music": 0x9B59B6,        # Purple (music theme)
-    "info": 0x3498DB,         # Blue
-    "queue": 0xE67E22,        # Orange
-    "lyrics": 0x1ABC9C,       # Teal
+    "primary": 0x5865F2,
+    "success": 0x57F287,
+    "warning": 0xFEE75C,
+    "error": 0xED4245,
+    "music": 0x9B59B6,
+    "info": 0x3498DB,
+    "queue": 0xE67E22,
+    "lyrics": 0x1ABC9C,
 }
 
 
 # ============================================================
-# DASHBOARD UI VIEW
+# DASHBOARD UI VIEW (Loop button removed to fix crash)
 # ============================================================
 class DashboardView(discord.ui.View):
     """Interactive playback controls attached to the Now Playing embed."""
@@ -75,14 +75,6 @@ class DashboardView(discord.ui.View):
                         discord.ButtonStyle.success
                         if self.player.paused
                         else discord.ButtonStyle.primary
-                    )
-                elif child.custom_id == "dash_loop":
-                    modes = ["Off", "Track", "Queue"]
-                    child.label = f"Loop: {modes[self.player.loop]}"
-                    child.style = (
-                        discord.ButtonStyle.success
-                        if self.player.loop
-                        else discord.ButtonStyle.secondary
                     )
                 elif child.custom_id == "dash_autoplay":
                     child.label = f"Autoplay: {'On' if self.player.autoplay else 'Off'}"
@@ -123,14 +115,6 @@ class DashboardView(discord.ui.View):
         await self.player.disconnect()
         self.stop()
         await interaction.response.send_message("Stopped and disconnected.", ephemeral=True)
-
-    @discord.ui.button(emoji="🔁", style=discord.ButtonStyle.secondary, custom_id="dash_loop")
-    async def loop(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if not self.player:
-            return await interaction.response.send_message("Player disconnected.", ephemeral=True)
-        await self.player.set_loop((self.player.loop + 1) % 3)
-        self.update_buttons()
-        await interaction.response.edit_message(view=self)
 
     @discord.ui.button(emoji="🎲", style=discord.ButtonStyle.secondary, custom_id="dash_autoplay")
     async def autoplay(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -461,21 +445,6 @@ async def shuffle(interaction: discord.Interaction):
     )
 
 
-@bot.tree.command(name="loop", description="Toggle loop mode (Off / Track / Queue)")
-async def loop(interaction: discord.Interaction):
-    player = await _get_player(interaction)
-    if not player:
-        return
-    await player.set_loop((player.loop + 1) % 3)
-    modes = ["Off", "Track", "Queue"]
-    await interaction.response.send_message(
-        embed=discord.Embed(
-            description=f"🔁 Loop mode: **{modes[player.loop]}**.",
-            color=COLORS["info"],
-        )
-    )
-
-
 @bot.tree.command(name="autoplay", description="Toggle autoplay (radio mode)")
 async def autoplay(interaction: discord.Interaction):
     player = await _get_player(interaction)
@@ -581,7 +550,7 @@ async def help_command(interaction: discord.Interaction):
     )
     embed.add_field(
         name="📋 Queue",
-        value="`/queue` — Show queue\n`/shuffle` — Shuffle queue\n`/loop` — Toggle loop\n`/nowplaying` — Show current track",
+        value="`/queue` — Show queue\n`/shuffle` — Shuffle queue\n`/nowplaying` — Show current track",
         inline=False,
     )
     embed.add_field(
