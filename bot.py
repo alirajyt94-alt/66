@@ -10,9 +10,14 @@ class MusicBot(commands.Bot):
         intents.voice_states = True
         super().__init__(command_prefix="!", intents=intents)
 
-    async def setup_hook(self):
-        await self.load_extension("cogs.music")
-        await self.tree.sync()
+    import os
+
+async def setup_hook(self):
+    # Force working directory to the folder containing bot.py
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+    
+    await self.load_extension("cogs.music")
+    await self.tree.sync()
         print("Slash commands synced.")
 
     async def on_ready(self):
